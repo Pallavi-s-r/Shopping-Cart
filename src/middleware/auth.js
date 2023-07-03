@@ -10,15 +10,12 @@ const {SECRET_KEY}=process.env;
 const authenticate = function (req, res, next) {
   try {
     let token = req.headers.authorization;
-    // console.log(req.headers.authorization)
-    if (!token) {
-        return res.status(401).send({ status: false, message: "token is missing" });
-    }
-    token = token.replace("Bearer", "").trim();
-    // console.log(token)
-    const decodedToken = jwt.verify(token, SECRET_KEY); 
-    req.decodedToken = decodedToken.userId;
-    next();
+    token=token.replace("Bearer","").trim()
+    
+    if(!token) return res.status(401).send({status:false,message:"Please provide token"})
+    let decodedToken= jwt.verify(token,SECRET_KEY)
+    req.decodedToken=decodedToken
+    next()
 } catch(error){
   if(error.message =="Invalid token"){
       return res.status(401).send({status : false, message : "Enter valid token"})
@@ -31,31 +28,20 @@ const authenticate = function (req, res, next) {
 
 const authorisation = async function (req, res, next) {
   try {
-    let updateuserId = req.params.userId;
-
-    if (!isValidId(updateuserId)) {
-      return res.status(400).send({
-        status: false,
-        message: "Please provide valid UserId for details",
-      });
-    }
-
-    let updatinguserId = await userModel.findById(updateuserId);
-    if (!updatinguserId) {
-      return res
-        .status(404)
-        .send({ status: false, message: "No user details found with this id" });
-    }
-    let userId = updatinguserId._id.toString();
-    let id = req.decodedToken;
-  
-    if (id != userId)
-      return res.status(403).send({
-        status: false,
-        message: "You are not authorised to perform this task",
-      });
-
-    next();
+      let decodedToken=req.decodedToken
+      if(req.params.userId){
+        if (!isValidId(req.params.userId)) {
+          return res.status(400).send({
+            status: false,
+            message: "Please provide valid UserId for details",
+          });
+        }
+          let user = await userModel.findById(req.params.userId)
+          if(!user) return res.send({status:false,message:"There is no user with this Id"})
+          console.log(decodedToken)
+          if(user._id!=decodedToken.id) return res.status(403).send({status:false,message:"Unauthorised"})
+          next()
+      }
   } catch (error) {
     console.log(error);
     return res.status(500).send({ message: error.message });

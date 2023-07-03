@@ -7,7 +7,7 @@ const mid = require("../middleware/auth");
 
 router.post("/register", createUser);
 router.post("/login", loginUser);
-router.get("/user/:userId/profile", mid.authenticate, mid.authorisation, getUserProfile);
+router.get("/user/:userId/profile", mid.authenticate, getUserProfile);
 router.put("/user/:userId/profile", mid.authenticate, mid.authorisation, updateProfile);
 
 

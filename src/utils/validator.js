@@ -31,11 +31,6 @@ const isValidNumber = function (number) {
   return false;
 };
 
-const isValidNumbers = function (value){
-  let user = /^[0-9]+$/.test(value)
-  return user
-}
-
 const isValidId = function (id) {
   return mongoose.Types.ObjectId.isValid(id);
 };
@@ -61,5 +56,4 @@ module.exports = {
   isValidId,
   isValidPincode,
   isValidEmail,
-  isValidNumbers,
 };

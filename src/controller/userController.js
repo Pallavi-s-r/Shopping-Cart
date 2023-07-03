@@ -14,16 +14,13 @@ const {
   isValidPassword,
   isValidPincode,
   isValidId,
-  // isValidFile
 } = require("../utils/validator");
 
 const createUser = async function (req, res) {
   try {
       const files = req.files;
-      const data =JSON.parse(req.body.body);
-      // const address = JSON.parse(req.body.address);
+      const data =JSON.parse(req.body.body); 
       const { fname, lname, email, phone, password ,address} = data
-      // const { shipping, billing } = address;
 
 
     if (!isValidBody(data)) {
@@ -186,63 +183,28 @@ const createUser = async function (req, res) {
 
 const loginUser = async function (req, res) {
   try {
-    let data = req.body;
-    let { email, password } = data;
-
-    if (!isValidBody(data))
-      return res.status(404).send({
-        status: false,
-        Msg: "Please provide data in the request body!",
-      });
-
-    if (!email)
-      return res
-        .status(400)
-        .send({ status: false, message: "Email is required!" });
-
+    const { email, password } = req.body
     if (!isValidEmail(email)) {
-      return res
-        .status(400)
-        .send({ status: false, message: "Email is invalid!" });
+        return res.status(400).send({ status: false, message: "please enter email correctly" })
     }
-
-    let checkEmail = await userModel.findOne({ email: email, password: password });
-    if (!checkEmail) {
-      return res
-        .status(401)
-        .send({ status: false, message: "Email Is incorrect!" });
+    if (!password) {
+        return res.status(400).send({ status: false, message: "please enter your password" })
     }
-    if (!password)
-      return res
-        .status(400)
-        .send({ status: false, message: "Please enter password " });
-
-    if (!isValidPassword(password)) {
-      return res.status(400).send({
-        status: false,
-        message:
-          "Password should be strong, please use one number, one upper case, one lower case and one special character and characters should be between 8 to 15 only!",
-      });
+    const userData = await userModel.findOne({ email: email })
+    if (!userData) {
+        return res.status(400).send({ status: false, message: "please enter correct email" })
     }
+    const passwordMatch = await bcrypt.compare(password, userData.password);
+    if (!passwordMatch) {
+        return res.status(400).send({ status: false, message: 'Please enter the correct password' });
+    }
+    let token = jwt.sign({id: userData._id},SECRET_KEY, { expiresIn: '24h' })
+    if (!token) {
+        return res.status(500).send({ status: false, message: "try again ..." })
+    }
+    return res.status(200).send({ status: true, message: "user login successfuly", data: { userId: userData._id, token: token } })
 
-    let encryptPwd = checkEmail.password;
 
-    await bcrypt.compare(password, encryptPwd, function (err, result) {
-      if (result) {
-        let token = jwt.sign({ userId: checkEmail._id }, SECRET_KEY, { expiresIn: "72h" });
-        // res.setHeader("x-api-key", token);
-        //  console.log(token)
-        return res.status(201).send({
-          status: true,
-          message: "User login successfull",
-          data: { userId: checkEmail._id, token: token },
-        });
-      } else {
-        return res
-          .status(401)
-          .send({ status: false, message: "Invalid password!" });
-      }
-    });
   } catch (err) {
     res.status(500).send({ staus: false, message: err.message });
   }
@@ -412,8 +374,7 @@ const updateProfile  = async function (req, res) {
     if (files && files.length > 0) {
       imgUrl = await uploadFile(files[0])
     }
-    if(password){
-    }
+    
     const upt = {}
     if (fname) {
       upt.fname = fname
