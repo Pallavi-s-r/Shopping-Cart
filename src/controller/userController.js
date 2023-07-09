@@ -16,10 +16,11 @@ const {
   isValidId,
 } = require("../utils/validator");
 
+// ===================Register====================================================================
 const createUser = async function (req, res) {
   try {
       const files = req.files;
-      const data =JSON.parse(req.body.body); 
+      const data =JSON.parse(req.body.data); 
       const { fname, lname, email, phone, password ,address} = data
 
 
@@ -179,7 +180,7 @@ const createUser = async function (req, res) {
   }
 };
 
-//logIn
+//==================logIn=====================================================================
 
 const loginUser = async function (req, res) {
   try {
@@ -397,7 +398,7 @@ const updateProfile  = async function (req, res) {
     if (Object.keys(address).length != 0) {
       upt.address = address
     }
-    // console.log(upt)
+
     const user = await userModel.findOneAndUpdate({ _id: userId }, { $set: upt }, { new: true })
     return res.status(200).send({ status: true, message: "successful", data: user })
 

@@ -38,7 +38,7 @@ const authorisation = async function (req, res, next) {
         }
           let user = await userModel.findById(req.params.userId)
           if(!user) return res.send({status:false,message:"There is no user with this Id"})
-          console.log(decodedToken)
+          // console.log(decodedToken)
           if(user._id!=decodedToken.id) return res.status(403).send({status:false,message:"Unauthorised"})
           next()
       }
